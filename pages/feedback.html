@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+    <style>
+        /* Feedback-specific styles that extend the illumoid theme */
+        :root {
+            --primary-accent: #6366f1;
+            --primary-accent-dark: #4f46e5;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-bg-dark: rgba(0, 0, 0, 0.2);
+            --font-color: #ffffff;
+            --font-secondary: #a1a1aa;
+            --unified-border: 1px solid rgba(255, 255, 255, 0.2);
+            --radius-lg: 16px;
+            --radius-sm: 8px;
+            --transition-speed: 0.3s;
+            --unified-blur: blur(10px);
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        .feedback-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .feedback-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--unified-blur);
+            -webkit-backdrop-filter: var(--unified-blur);
+            border: var(--unified-border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feedback-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-accent), var(--primary-accent-dark));
+        }
+
+        .feedback-header {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+            color: var(--font-color);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            color: var(--font-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--glass-bg-dark);
+            border: var(--unified-border);
+            border-radius: var(--radius-sm);
+            color: var(--font-color);
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all var(--transition-speed);
+        }
+
+        .char-counter {
+            font-size: 0.7rem;
+            color: var(--font-secondary);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            text-transform: uppercase;
+        }
+
+        .submit-btn:disabled {
+            background: #334155;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #success-message { display: none; text-align: center; padding: 2rem 0; }
+        .success-title { color: var(--font-color); font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .success-text { color: var(--font-secondary); line-height: 1.5; }
+        .hate-icon { color: #ef4444; font-size: 3rem; margin-bottom: 1rem; }
+        .honeypot { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="feedback-container">
+        <div class="feedback-card">
+            <div id="form-container">
+                <h2 class="feedback-header">Feedback</h2>
+                <form id="feedback-form">
+                    <input type="text" name="_honey" class="honeypot">
+                    <input type="hidden" name="_captcha" value="false">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Name (Optional)</label>
+                        <input type="text" name="name" id="userName" class="form-input" placeholder="Anonymous">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <select name="_subject" id="subjectSelect" class="form-select">
+                            <option value="Suggestion">Suggestion</option>
+                            <option value="New App/Game">New App/Game</option>
+                            <option value="Bug Report">Bug Report</option>
+                            <option value="Hate Comment">Hate Comment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea name="message" id="messageArea" rows="4" class="form-textarea" placeholder="Type here..." required maxlength="500"></textarea>
+                        <div class="char-counter"><span id="charCount">0</span>/500</div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+
+            <div id="success-message">
+                <div id="success-icon-container"></div>
+                <h3 id="success-title" class="success-title"></h3>
+                <p id="success-text" class="success-text"></p>
+                <button onclick="location.reload()" style="margin-top:1rem; cursor:pointer;">Go Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('feedback-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageArea = document.getElementById('messageArea');
+        const charCountDisplay = document.getElementById('charCount');
+        const subjectSelect = document.getElementById('subjectSelect');
+        
+        // --- 1. SLUR DETECTION ---
+        // Add words you want to filter here
+        const blacklist = ['badword1', 'badword2', 'slur1']; 
+
+        function containsSlurs(text) {
+            const lowerText = text.toLowerCase();
+            return blacklist.some(word => lowerText.includes(word));
+        }
+
+        // --- 2. COOLDOWN / RATE LIMIT LOGIC ---
+        const COOLDOWN_MS = 2 * 60 * 1000; // 2 Minutes
+
+        function checkRateLimit() {
+            const lastSubmit = localStorage.getItem('lastFeedbackTime');
+            if (lastSubmit) {
+                const elapsed = Date.now() - parseInt(lastSubmit);
+                if (elapsed < COOLDOWN_MS) {
+                    startTimer(Math.ceil((COOLDOWN_MS - elapsed) / 1000));
+                }
+            }
+        }
+
+        function startTimer(seconds) {
+            submitBtn.disabled = true;
+            const timer = setInterval(() => {
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Send Message";
+                } else {
+                    submitBtn.innerText = `Cooldown: ${seconds}s`;
+                    seconds--;
+                }
+            }, 1000);
+        }
+
+        // --- 3. EVENT LISTENERS ---
+        messageArea.addEventListener('input', () => {
+            charCountDisplay.innerText = messageArea.value.length;
+        });
+
+        let hateCount = 0;
+        const annoyingPrompts = [
+            "Are you sure you want to be mean?",
+            "Are you really, really sure?",
+            "This will be sent directly to our feelings. Still want to send?",
+            "Is there nothing better you could be doing?",
+            "Final chance to be a good person. Click OK to stay a hater."
+        ];
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Auto-detect hate
+            if (containsSlurs(messageArea.value)) {
+                subjectSelect.value = "Hate Comment";
+            }
+
+            // Hate prompt logic
+            if (subjectSelect.value === "Hate Comment" && hateCount < annoyingPrompts.length) {
+                alert(annoyingPrompts[hateCount]);
+                hateCount++;
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Sending...";
+
+            const formData = new FormData(form);
+            
+            fetch("https://formsubmit.co/ajax/ilavaminecraft123@gmail.com", {
+                method: "POST",
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => {
+                if(response.ok) {
+                    localStorage.setItem('lastFeedbackTime', Date.now().toString());
+                    showSuccess();
+                }
+            })
+            .catch(() => {
+                alert("Error sending message.");
+                submitBtn.disabled = false;
+            });
+        });
+
+        function showSuccess() {
+            document.getElementById('form-container').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+            const icon = document.getElementById('success-icon-container');
+            const title = document.getElementById('success-title');
+            const text = document.getElementById('success-text');
+
+            if (subjectSelect.value === "Hate Comment") {
+                icon.innerHTML = '<div class="hate-icon">>:(</div>';
+                title.innerText = "Sent, I guess.";
+                text.innerText = "Your mean message was sent. We're not happy about it.";
+            } else {
+                icon.innerHTML = '<div style="color:#4ade80; font-size:3rem;">✔</div>';
+                title.innerText = "Sent Successfully!";
+                text.innerText = "Thanks for making our day better.";
+            }
+        }
+
+        // Run on load
+        checkRateLimit();
+    </script>
+</body>
+</html>

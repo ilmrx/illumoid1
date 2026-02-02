@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+    min-block-size: 100vh;
+    background: linear-gradient(
+        -45deg,
+        var(--primary-accent),
+        var(--bg-gradient-2) var(--gradient-stop),
+        var(--primary-accent-2)
+    );
+    background-size: 130% 130%;
+    animation: grad 6s ease-in-out infinite;
+    font-family: var(--font-main);
+    overflow: auto;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+}
+
+@keyframes grad {
+    0%, 100% {
+        --gradient-stop: 0%;
+    }
+    50% {
+        --gradient-stop: 100%;
+    }
+}
+
+@property --gradient-stop {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 0%;
+}

@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Space</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --p1-color: #ff5578;
+                --p2-color: #00aaff;
+                --bg-color: #0d1117;
+                --font-color: #eaf9ff;
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: "Orbitron", monospace;
+            }
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+                background: var(--bg-color);
+            }
+            #gameCanvas {
+                transition: transform 0.1s ease-out;
+            }
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            canvas {
+                display: block;
+                width: 100vw;
+                height: 100vh;
+                background: var(--bg-color);
+            }
+            .ui-overlay {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 10;
+            }
+            .hud {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                color: var(--font-color);
+            }
+            .player-hud {
+                padding: 12px 16px;
+                background: rgba(0, 0, 0, 0.25);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                backdrop-filter: blur(5px);
+                min-width: 220px;
+            }
+            .player-hud h2 {
+                font-size: 18px;
+                margin-bottom: 8px;
+            }
+            .health-bar-container {
+                width: 100%;
+                height: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+                margin-top: 6px;
+                overflow: hidden;
+                border: 1px solid rgba(0,0,0,0.3);
+            }
+            .health-bar-fill {
+                height: 100%; 
+                width: 100%;
+                border-radius: 5px;
+                transition: width 0.2s ease-out;
+            }
+            #p1Health { background: var(--p1-color); }
+            #p2Health { background: var(--p2-color); }
+            .player-hud.right { text-align: right;
+            } 
+            .cooldown-bar {
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+                margin-top: 4px;
+                overflow: hidden;
+            }
+            .cooldown-fill {
+                height: 100%;
+                width: 100%;
+                border-radius: 5px;
+                transition: width 0.1s linear;
+            }
+            .modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 100;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+            .modal.show {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .modal-content {
+                background: linear-gradient(180deg, #071827, #041017);
+                border: 1px solid rgba(0, 238, 255, 0.1);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+                color: var(--font-color);
+                padding: 28px;
+                border-radius: 14px;
+                text-align: center;
+                min-width: 350px;
+            }
+            .modal-content h1 {
+                font-size: 32px;
+                margin-bottom: 12px;
+            }
+            .menu-actions {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                margin-top: 20px;
+            }
+            #settingsPanel {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(0, 238, 255, 0.1);
+                display: none;
+            }
+            #settingsPanel .row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            #settingsPanel .label {
+                font-weight: 700;
+                margin-bottom: 6px;
+                color: #bfefff;
+                font-size: 14px;
+            }
+            #settingsPanel input {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                background: #0b1a24;
+                color: #eaf9ff;
+                border: 1px solid rgba(0, 238, 255, 0.12);
+                font-family: "Orbitron", monospace;
+            }
+            #settingsPanel .actions {
+                display: flex;
+                gap: 8px;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+            .modal-content h1 {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+            .btn {
+                padding: 10px 18px;
+                border-radius: 8px;
+                background: linear-gradient(180deg, #00eefd, #00a8c0);
+                color: #001217;
+                font-weight: 700;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 10px 30px rgba(0, 168, 192, 0.08);
+            }
+            .keypad{position:fixed;bottom:18px;z-index:220;width:360px;display:flex;gap:12px;align-items:flex-end;justify-content:space-between;pointer-events:none}
+            .kp-left{left:18px;right:auto}
+            .kp-right{right:18px;left:auto}
+            .kb{display:grid;grid-template-columns:repeat(3, 40px);grid-template-rows:repeat(3, 28px);gap:8px;padding:10px;background:rgba(0,0,0,.12);border-radius:10px;border:1px solid rgba(0,238,255,.06);box-shadow:inset 0 -3px 8px rgba(0,0,0,.12)}
+            .kb .kp-title{grid-column:1/-1;margin-bottom:4px;font-size:13px;font-weight:900;color:#eaf9ff;text-shadow:0 0 8px rgba(0,238,255,.16)}
+            .k{width:40px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:13px;color:#cfeeff;background:rgba(255,255,255,.03);transition:all 90ms;box-shadow:0 4px 8px rgba(0,0,0,.35)}
+            .k.on{background:linear-gradient(180deg,#00eefd,#00a8c0);color:#001217;transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,168,192,.14)}
+            .k.small{font-size:12px;height:24px;width:36px;border-radius:5px}
+            .btn{padding:10px 18px;border-radius:8px;background:linear-gradient(180deg,#00eefd,#00a8c0);color:#001217;font-weight:700;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 10px 30px rgba(0, 168, 192, 0.08);
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui-overlay">
+            <div class="hud">
+                <div class="player-hud">
+                    <h2 class="p1-text">Red</h2>
+                    <div>Lives: <span id="p1Lives"></span></div>
+                    <div class="health-bar-container">
+                        <div class="health-bar-fill" id="p1Health"></div>
+                    </div>
+                </div>
+                <div class="player-hud right">
+                    <h2 class="p2-text">Blue</h2>
+                    <div>Lives: <span id="p2Lives"></span></div>
+                    <div class="health-bar-container">
+                        <div class="health-bar-fill" id="p2Health"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menuModal" class="modal show">
+            <div class="modal-content">
+                <h1>Space</h1>
+                <div class="menu-actions">
+                    <button id="btnSettings" class="btn" type="button">Settings</button>
+                    <button id="startButton" class="btn">Start Game</button>
+                </div>
+                <div id="settingsPanel" role="dialog" aria-hidden="true">
+                    <div class="row">
+                        <div>
+                            <div class="label">Asteroids</div>
+                            <input id="setAsteroids" type="number" min="1" max="1000" value="15" />
+                        </div>
+                        <div>
+                            <div class="label">Lives</div>
+                            <input id="setLives" type="number" min="1" max="10" value="3" />
+                        </div>
+                        <div>
+                            <div class="label">Power-up Freq (sec)</div>
+                            <input id="setPowerupFreq" type="number" min="1" max="60" value="5" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <div class="label">Thrust</div>
+                            <input id="setThrust" type="number" step="0.01" min="0.05" max="10" value="0.1" />
+                        </div>
+                        <div>
+                            <div class="label">Fire Rate (shots/sec)</div>
+                            <input id="setFireRate" type="number" min="1" max="100" value="4" />
+                        </div>
+                        <div>
+                            <div class="label" style="visibility: hidden;">Placeholder</div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button id="btnCloseSettings" class="btn" type="button">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="winModal" class="modal">
+            <div class="modal-content">
+                <h1 id="winMessage"></h1>
+                <button id="retryButton" class="btn">Play Again</button>
+            </div>
+        </div>
+        <div class="keypad kp-left" aria-hidden="true">
+            <div class="kb" id="leftKeys">
+                <div class="kp-title" id="leftTitle">Red</div>
+                <div class="k" id="L-none-a" style="visibility:hidden"></div>
+                <div class="k" id="L-up">W</div>
+                <div class="k" id="L-none-b" style="visibility:hidden"></div>
+                <div class="k" id="L-left">A</div>
+                <div class="k" id="L-down">S</div>
+                <div class="k" id="L-right">D</div>
+                <div class="k small" id="L-shoot" style="grid-column: 1">C</div>
+            </div>
+        </div>
+        <div class="keypad kp-right" aria-hidden="true" style="right: 18px; justify-content: flex-end;">
+            <div class="kb" id="rightKeys" style="margin-left:10px">
+                <div class="kp-title" id="rightTitle">Blue</div>
+                <div class="k" id="R-none-a" style="visibility:hidden;"></div>
+                <div class="k" id="R-up">↑</div>
+                <div class="k" id="R-none-b" style="visibility:hidden"></div>
+                <div class="k" id="R-left">←</div>
+                <div class="k" id="R-down">↓</div>
+                <div class="k" id="R-right">→</div>
+                <div class="k small" id="R-shoot" style="grid-column: 1">,</div>
+            </div>
+        </div>
+        <script>
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+            const VW = 1920, VH = 1080;
+            canvas.width = VW;
+            canvas.height = VH;
+            // --- Game Settings ---
+            const SHIP_SIZE = 30;
+            let THRUST = 0.1;
+            const TURN_SPEED = 0.08;
+            const FRICTION = 0.99;
+            let FIRE_RATE = 15; // frames
+            let BLINK_COOLDOWN = 180; // frames
+            let MAX_LIVES = 3;
+            let MAX_HEALTH = 4.5;
+            let ASTEROID_COUNT = 15;
+            let POWERUP_SPAWN_RATE = 300; // frames
+            const BULLET_SPEED = 12;
+            // --- Game State ---
+            let players = [];
+            let bullets = [];
+            let asteroids = [];
+            let particles = [];
+            let powerups = [];
+            let stars = [];
+            let screenShake = 0;
+            let hitStop = 0;
+            let keys = {};
+            let gameState = "MENU"; // MENU, COUNTDOWN, PLAY, GAMEOVER
+            let countdown = 3;
+            let showGo = false, goStartTime = 0;
+            let performanceMode = document.documentElement.classList.contains('performance-mode');
+            // --- Timestep ---
+            let lastTime = 0;
+            let accumulator = 0;
+            let countdownTimer = 0;
+            const FIXED_TIME_STEP = 1000 / 60;
+            // --- UI Elements ---
+            const p1LivesEl = document.getElementById("p1Lives");
+            const p2LivesEl = document.getElementById("p2Lives");
+            const menuModal = document.getElementById("menuModal");
+            const winModal = document.getElementById("winModal");
+            const startButton = document.getElementById("startButton");
+            const retryButton = document.getElementById("retryButton");
+            const winMessageEl = document.getElementById("winMessage");
+            // --- Drawing Functions ---
+            function drawShip(p) {
+                if (p.flash > 0 && Math.floor(p.flash / 2) % 2 === 0) return;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = 2;
+                // Create a semi-transparent fill
+                const fillRgb = hexToRgb(p.color);
+                ctx.fillStyle = `rgba(${fillRgb.r}, ${fillRgb.g}, ${fillRgb.b}, 0.25)`;
+                ctx.fillStyle = p.color;
+                if (!performanceMode) {
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 10;
+                }
+                ctx.beginPath();
+                ctx.moveTo(SHIP_SIZE, 0);
+                ctx.lineTo(-SHIP_SIZE / 2, -SHIP_SIZE / 1.5);
+                ctx.lineTo(-SHIP_SIZE / 2, SHIP_SIZE / 1.5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+            function drawAsteroid(a) {
+                ctx.save();
+                ctx.strokeStyle = '#aaa';
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+                if (!performanceMode) {
+                    ctx.shadowColor = '#aaa';
+                    ctx.shadowBlur = 8;
+                }
+                ctx.translate(a.x, a.y);
+                ctx.rotate(a.angle);
+                ctx.beginPath();
+                ctx.moveTo(a.vertices[0].x, a.vertices[0].y);
+                for (let i = 1; i < a.vertices.length; i++) {
+                    ctx.lineTo(a.vertices[i].x, a.vertices[i].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+            function drawThrust(p) {
+                if (!keys[p.controls.thrust]) return;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                const grad = ctx.createLinearGradient(-SHIP_SIZE * 0.5, 0, -SHIP_SIZE * 2.5, 0);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                grad.addColorStop(0.7, `${p.color}88`);
+                grad.addColorStop(1, `${p.color}00`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(-SHIP_SIZE / 2, 0);
+                ctx.lineTo(-SHIP_SIZE * 2, -SHIP_SIZE / 2);
+                ctx.lineTo(-SHIP_SIZE * 2, SHIP_SIZE / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+            function drawShield(p) {
+                const shieldEffect = p.effects.find(e => e.type === 'shield');
+                if (!shieldEffect) return;
+                ctx.save();
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = 2;
+                const lifeLeft = (shieldEffect.expires - Date.now()) / shieldEffect.total;
+                ctx.globalAlpha = Math.min(1, lifeLeft * 4); // Fade out
+                if (!performanceMode) {
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 15;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, SHIP_SIZE * 1.8, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            function drawPowerup(pu) {
+                ctx.save();
+                const colors = { shield: '#00aaff', autoFire: '#ffdd00', tripleShot: '#ff5578', blast: '#ffffff' };
+                const color = colors[pu.type] || '#ffffff';
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                if (!performanceMode) {
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 15;
+                }
+                ctx.globalAlpha = Math.min(1, pu.life / 120);
+                ctx.beginPath();
+                ctx.arc(pu.x, pu.y, pu.size, 0, Math.PI * 2);
+                ctx.fill();
+                // Draw letter inside
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 16px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.globalAlpha = Math.min(1, pu.life / 60);
+                let letter = '?';
+                switch (pu.type) {
+                    case 'autoFire': letter = 'A'; break;
+                    case 'tripleShot': letter = 'T'; break;
+                    case 'shield': letter = 'S'; break;
+                    case 'blast': letter = 'E'; break;
+                }
+                ctx.fillText(letter, pu.x, pu.y + 1);
+                ctx.restore();
+            }
+            // --- Game Logic ---
+            function init() {
+                players = [
+                    {
+                        id: 1, x: VW / 4, y: VH / 2, vx: 0, vy: 0, angle: 0,
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--p1-color').trim(),
+                        controls: { thrust: 'w', left: 'a', right: 'd', fire: 'c', down: 's' },
+                        lives: MAX_LIVES, health: MAX_HEALTH, fireCD: 0, effects: [], flash: 0,
+                    },
+                    {
+                        id: 2, x: VW * 3 / 4, y: VH / 2, vx: 0, vy: 0, angle: Math.PI,
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--p2-color').trim(),
+                        controls: { thrust: 'ArrowUp', left: 'ArrowLeft', right: 'ArrowRight', fire: ',', down: 'ArrowDown' },
+                        lives: MAX_LIVES, health: MAX_HEALTH, fireCD: 0, effects: [], flash: 0,
+                    },
+                ];
+                bullets = [];
+                particles = [];
+                asteroids = [];
+                powerups = [];
+                for (let i = 0; i < ASTEROID_COUNT; i++) {
+                    createAsteroid();
+                }
+                stars = [];
+                for (let i = 0; i < 200; i++) {
+                    stars.push({ x: Math.random() * VW, y: Math.random() * VH,
+                        size: Math.random() * 1.5 + 0.5,
+                        opacity: Math.random() * 0.6 + 0.2 });
+                }
+                countdown = 3;
+                showGo = false;
+                // gameState is set by the calling function
+                winModal.classList.remove("show");
+                menuModal.classList.remove("show");
+            }
+            function readSettings() {
+                const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+                const asteroidInput = document.getElementById("setAsteroids");
+                ASTEROID_COUNT = clamp(parseInt(asteroidInput.value, 10) || 15, 1, 1000);
+                const livesInput = document.getElementById("setLives");
+                MAX_LIVES = clamp(parseInt(livesInput.value, 10) || 3, 1, 10);
+                const powerupFreqInput = document.getElementById("setPowerupFreq");
+                POWERUP_SPAWN_RATE = clamp(parseInt(powerupFreqInput.value, 10) || 5, 1, 60) * 60;
+                const thrustInput = document.getElementById("setThrust");
+                THRUST = clamp(parseFloat(thrustInput.value) || 0.1, 0.05, 10);
+                const fireRateInput = document.getElementById("setFireRate");
+                const shotsPerSecond = clamp(parseInt(fireRateInput.value, 10) || 4, 1, 100);
+                FIRE_RATE = Math.floor(60 / shotsPerSecond);
+                // Update input values to clamped values
+                asteroidInput.value = ASTEROID_COUNT;
+                livesInput.value = MAX_LIVES;
+                powerupFreqInput.value = Math.round(POWERUP_SPAWN_RATE / 60);
+                thrustInput.value = THRUST;
+                fireRateInput.value = shotsPerSecond;
+            }
+            function createAsteroid(x, y, size) {
+                let newX, newY;
+                const safeRadius = 250; // Don't spawn within this radius of a player
+                let isSafe = false;
+                do {
+                    newX = x ?? Math.random() * VW;
+                    newY = y ?? Math.random() * VH;
+                    isSafe = players.every(p => Math.hypot(newX - p.x, newY - p.y) > safeRadius);
+                } while (x === undefined && !isSafe); // Only re-roll if position is not predefined
+                const newAsteroid = {
+                    x: newX,
+                    y: newY,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2, // Smallest smidge smaller meteors
+                    angle: Math.random() * Math.PI * 2,
+                    size: size ?? Math.random() * 25 + 18,
+                    vertices: [],
+                };
+                const sides = Math.floor(Math.random() * 5) + 7;
+                for (let i = 0; i < sides; i++) {
+                    const angle = (i / sides) * Math.PI * 2;
+                    const radius = newAsteroid.size * (Math.random() * 0.4 + 0.8);
+                    newAsteroid.vertices.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+                }
+                asteroids.push(newAsteroid);
+            }
+            function createPowerup() {
+                const types = ['shield', 'autoFire', 'tripleShot', 'blast'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                powerups.push({
+                    x: Math.random() * (VW - 200) + 100,
+                    y: Math.random() * (VH - 200) + 100,
+                    type: type,
+                    size: 15,
+                    life: 600 // 10 seconds
+                });
+            }
+            function spawnParticles(x, y, color, count, speed) {
+                if (performanceMode) return; // Already here, good.
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x, y, 
+                        vx: (Math.random() - 0.5) * speed,
+                        vy: (Math.random() - 0.5) * speed,
+                        life: Math.random() * 40 + 20,
+                        maxLife: 60,
+                        size: Math.random() * 2 + 1,
+                        startColor: '#FFFFFF',
+                        endColor: color
+                    });
+                }
+            }
+            function spawnThrustParticles(p) {
+                if (performanceMode) return; // Already here, good.
+                const speed = 2 + Math.hypot(p.vx, p.vy);
+                const angle = p.angle + Math.PI + (Math.random() - 0.5) * 0.5; // Opposite direction with spread
+                const spawnX = p.x - Math.cos(p.angle) * (SHIP_SIZE * 0.75);
+                const spawnY = p.y - Math.sin(p.angle) * (SHIP_SIZE * 0.75);
+                for (let i = 0; i < 2; i++) {
+                    particles.push({
+                        x: spawnX, y: spawnY,
+                        vx: p.vx + Math.cos(angle) * speed * (Math.random() * 0.5 + 0.5),
+                        vy: p.vy + Math.sin(angle) * speed * (Math.random() * 0.5 + 0.5),
+                        life: Math.random() * 30 + 20,
+                        maxLife: 50,
+                        size: Math.random() * 2 + 1,
+                        startColor: '#FFFFFF',
+                        endColor: p.color
+                    });
+                }
+            }
+            function update() {
+                if (gameState !== "PLAY") {
+                    if (gameState === "COUNTDOWN") {
+                        // Countdown logic is now handled by initCountdown and drawCountdown
+                    } return;
+                }
+                // Countdown logic
+                if (gameState === "COUNTDOWN") {
+                    countdownTimer += FIXED_TIME_STEP;
+                    if (countdownTimer >= 1000) {
+                        countdownTimer = 0;
+                        countdown--;
+                        updateCountdown();
+                    }
+                    return; // Don't update game logic during countdown
+                }
+                // Player logic
+                players.forEach(p => {
+                    if (p.lives <= 0) return;
+                    // Effects
+                    if (p.flash > 0) p.flash--;
+                    const now = Date.now();
+                    p.effects = p.effects.filter(e => e.expires > now);
+                    if (p.rapidFire) p.rapidFire--;
+                    // Movement
+                    if (keys[p.controls.thrust]) {
+                        p.vx += Math.cos(p.angle) * THRUST;
+                        p.vy += Math.sin(p.angle) * THRUST;
+                        spawnThrustParticles(p);
+                    }
+                    if (keys[p.controls.down]) {
+                        p.vx -= Math.cos(p.angle) * THRUST * 0.5;
+                        p.vy -= Math.sin(p.angle) * THRUST * 0.5;
+                    }
+                    if (keys[p.controls.right]) p.angle += TURN_SPEED;
+                    if (keys[p.controls.left]) p.angle -= TURN_SPEED;
+                    p.vx *= FRICTION;
+                    p.vy *= FRICTION;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    // Screen wrap
+                    if (p.x < 0) p.x = VW; if (p.x > VW) p.x = 0;
+                    if (p.y < 0) p.y = VH; if (p.y > VH) p.y = 0;
+                    // Cooldowns
+                    if (p.fireCD > 0) p.fireCD--;
+                    // Fire
+                    const hasAutoFire = p.effects.some(e => e.type === 'autoFire');
+                    const isFiring = keys[p.controls.fire] || hasAutoFire;
+                    if (isFiring && p.fireCD === 0) {
+                        const hasTripleShot = p.effects.some(e => e.type === 'tripleShot');
+                        if (hasTripleShot) {
+                            for (let i = -1; i <= 1; i++) {
+                                const angle = p.angle + i * 0.2; // 0.2 radians spread
+                                bullets.push({
+                                    x: p.x + Math.cos(angle) * SHIP_SIZE,
+                                    y: p.y + Math.sin(angle) * SHIP_SIZE,
+                                    vx: Math.cos(angle) * BULLET_SPEED,
+                                    vy: Math.sin(angle) * BULLET_SPEED,
+                                    owner: p.id, life: 120, color: p.color
+                                });
+                            }
+                        } else {
+                            bullets.push({
+                                x: p.x + Math.cos(p.angle) * SHIP_SIZE,
+                                y: p.y + Math.sin(p.angle) * SHIP_SIZE,
+                                vx: Math.cos(p.angle) * BULLET_SPEED,
+                                vy: Math.sin(p.angle) * BULLET_SPEED,
+                                owner: p.id, life: 120, color: p.color
+                            });
+                        }
+                        p.fireCD = hasAutoFire ? Math.floor(FIRE_RATE / 3) : FIRE_RATE;
+                    }
+                });
+                // Bullets
+                bullets.forEach((b, i) => {
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.life--;
+                    if (b.life <= 0) bullets.splice(i, 1);
+                    // Screen wrap
+                    if (b.x < 0) b.x = VW; if (b.x > VW) b.x = 0;
+                    if (b.y < 0) b.y = VH; if (b.y > VH) b.y = 0;
+                });
+                // Asteroids
+                asteroids.forEach(a => {
+                    a.x += a.vx;
+                    a.y += a.vy;
+                    a.angle += 0.005;
+                    if (a.x < -a.size) a.x = VW + a.size; if (a.x > VW + a.size) a.x = -a.size;
+                    if (a.y < -a.size) a.y = VH + a.size; if (a.y > VH + a.size) a.y = -a.size;
+                });
+                // Powerups
+                if (Math.random() < 1 / POWERUP_SPAWN_RATE) {
+                    createPowerup();
+                }
+                powerups.forEach((pu, i) => {
+                    pu.life--;
+                    if (pu.life <= 0) powerups.splice(i, 1);
+                    players.forEach(p => {
+                        if (p.lives > 0 && Math.hypot(p.x - pu.x, p.y - pu.y) < SHIP_SIZE + pu.size) {
+                            if (pu.type === 'blast') {
+                                const bulletCount = 24;
+                                for (let i = 0; i < bulletCount; i++) {
+                                    const angle = (i / bulletCount) * Math.PI * 2;
+                                    bullets.push({
+                                        x: p.x, y: p.y,
+                                        vx: Math.cos(angle) * BULLET_SPEED * 0.8,
+                                        vy: Math.sin(angle) * BULLET_SPEED * 0.8,
+                                        owner: p.id, life: 90, color: p.color
+                                    });
+                                }
+                                spawnParticles(p.x, p.y, p.color, 50, 8);
+                            } else {
+                                const duration = { shield: 5000, autoFire: 3000, tripleShot: 5000 };
+                                const now = Date.now();
+                                // Remove existing powerup of the same type before adding new one
+                                const existingIndex = p.effects.findIndex(e => e.type === pu.type);
+                                if (existingIndex > -1) {
+                                    p.effects.splice(existingIndex, 1);
+                                }
+                                p.effects.push({
+                                    type: pu.type,
+                                    expires: now + duration[pu.type],
+                                    total: duration[pu.type]
+                                });
+                            }
+                            powerups.splice(i, 1);
+                            spawnParticles(p.x, p.y, '#fff', 30, 4);
+                        }
+                    });
+                });
+                // Collisions
+                checkCollisions();
+                // Respawn asteroids if there are too few
+                if (asteroids.length < ASTEROID_COUNT) {
+                    createAsteroid();
+                }
+                updateUI();
+            }
+            function draw() {
+                ctx.clearRect(0, 0, VW, VH);
+                // Apply screen shake
+                if (screenShake > 0) {
+                    const shakeX = (Math.random() - 0.5) * screenShake;
+                    const shakeY = (Math.random() - 0.5) * screenShake;
+                    ctx.save();
+                    ctx.translate(shakeX, shakeY);
+                }
+                // Draw stars
+                ctx.save();
+                stars.forEach(s => {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                    ctx.fillRect(s.x, s.y, s.size, s.size);
+                });
+                const p1 = players[0] || {vx:0, vy:0};
+                const p2 = players[1] || {vx:0, vy:0};
+                stars.forEach(s => {
+                    s.x -= (p1.vx + p2.vx) * 0.01 * s.size;
+                    s.y -= (p1.vy + p2.vy) * 0.01 * s.size;
+                    if (s.x < 0) s.x = VW; if (s.x > VW) s.x = 0;
+                    if (s.y < 0) s.y = VH; if (s.y > VH) s.y = 0;
+                });
+                ctx.restore();
+                players.forEach(p => {
+                    if (p.lives > 0) {
+                        drawShip(p);
+                        drawShield(p);
+                    }
+                });
+                bullets.forEach(b => {
+                    ctx.fillStyle = b.color;
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                asteroids.forEach(drawAsteroid);
+                powerups.forEach(drawPowerup);
+                particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life--;
+                    if (p.life <= 0) particles.splice(i, 1);
+                    const lifeRatio = p.life / p.maxLife;
+                    ctx.globalAlpha = lifeRatio;
+                    // Interpolate color from start to end
+                    const t = 1 - lifeRatio;
+                    const startRGB = hexToRgb(p.startColor || p.color);
+                    const endRGB = hexToRgb(p.endColor || p.color);
+                    const r = Math.floor(startRGB.r + (endRGB.r - startRGB.r) * t);
+                    const g = Math.floor(startRGB.g + (endRGB.g - startRGB.g) * t);
+                    const b = Math.floor(startRGB.b + (endRGB.b - startRGB.b) * t);
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, Math.max(0, p.size * lifeRatio), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                });
+                // Restore from screen shake
+                if (screenShake > 0) {
+                    ctx.restore();
+                    screenShake *= 0.9; // Dampen shake
+                }
+                drawActivePowerups();
+                if (countdown > 0 || showGo) drawCountdown();
+            }
+            function drawCountdown() {
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                const glowAlpha = 0.7 + 0.3 * Math.sin(performance.now() / 200);
+                ctx.fillStyle = `rgba(0,238,255,${glowAlpha})`;
+                ctx.shadowColor = "#0ff";
+                ctx.shadowBlur = 20;
+                ctx.textAlign = "center";
+                ctx.globalAlpha = 0.85 + Math.sin(Date.now() / 200) * 0.15;
+                ctx.font = "bold 120px Orbitron";
+                if (countdown > 0) {
+                    window.countdownAlpha = Math.min((window.countdownAlpha || 0) + 0.08, 1);
+                } else if (showGo) {
+                    const elapsed = Date.now() - goStartTime;
+                    window.countdownAlpha = Math.max(1 - elapsed / 1000, 0);
+                } else {
+                    window.countdownAlpha = Math.max((window.countdownAlpha || 1) - 0.08, 0);
+                }
+                ctx.filter = "blur(5px)";
+                ctx.globalAlpha = 0.5 * (window.countdownAlpha || 0);
+                const text = countdown > 0 ? countdown.toString() : showGo ? "GO!" : "";
+                ctx.fillText(text, VW / 2 + 5, VH / 2 + 55);
+                ctx.filter = "none";
+                ctx.globalAlpha = window.countdownAlpha || 0;
+                ctx.save();
+                const countdownScale = 1 + 0.2 * (1 - (window.countdownAlpha || 0));
+                ctx.translate(VW / 2, VH / 2 + 50);
+                ctx.scale(countdownScale, countdownScale);
+                ctx.translate(-VW / 2, -(VH / 2 + 50));
+                ctx.fillText(
+                    text,
+                    VW / 2,
+                    VH / 2 + 50,
+                );
+                ctx.restore();
+                ctx.restore();
+            }
+            function startGame() {
+                gameState = "PLAY";
+                lastTime = performance.now();
+            }
+            function drawActivePowerups() {
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform to draw in screen space
+                const now = Date.now();
+                players.forEach((p, playerIndex) => {
+                    const activeEffects = p.effects.filter(e => e.expires > now);
+                    if (activeEffects.length === 0) return;
+                    const itemWidth = 50;
+                    const circleRadius = 20;
+                    const hudEl = document.querySelector(playerIndex === 0 ? '.player-hud:not(.right)' : '.player-hud.right');
+                    const keyboardEl = document.getElementById(playerIndex === 0 ? 'leftKeys' : 'rightKeys');
+                    const rect = keyboardEl.getBoundingClientRect();
+                    const startX = playerIndex === 0 ? rect.right + 15 : rect.left - 15 - (activeEffects.length * itemWidth);
+                    const yPos = rect.top + rect.height / 2; // This should already be correct, but let's ensure it is.
+                    activeEffects.forEach((e, i) => {
+                        ctx.save();
+                        const colors = { shield: '#00aaff', autoFire: '#ffdd00', tripleShot: '#ff5578' };
+                        const color = colors[e.type] || '#ffffff';
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 8;
+                        ctx.strokeStyle = ctx.fillStyle = color;
+                        ctx.lineWidth = 3;
+                        ctx.font = "bold 18px Orbitron";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        let letter = '?';
+                        switch (e.type) {
+                            case 'autoFire': letter = 'A'; break;
+                            case 'tripleShot': letter = 'T'; break;
+                            case 'shield': letter = 'S'; break;
+                        }
+                        const x = startX + i * itemWidth + itemWidth / 2;
+                        ctx.beginPath();
+                        ctx.arc(x, yPos, circleRadius, 0, Math.PI * 2);
+                        ctx.globalAlpha = 0.2;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        ctx.fillText(letter, x, yPos);
+                        const percentage = Math.max(0, Math.min(1, (e.expires - now) / e.total));
+                        ctx.beginPath();
+                        ctx.arc(x, yPos, circleRadius, -Math.PI / 2, -Math.PI / 2 + percentage * 2 * Math.PI);
+                        ctx.stroke();
+                        ctx.restore();
+                    });
+                });
+                ctx.restore();
+            }
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16)
+                } : { r: 255, g: 255, b: 255 }; // Default to white if parse fails
+            }
+            function updateUI() {
+                if (!players.length) return; 
+                p1LivesEl.textContent = players[0].lives; 
+                p2LivesEl.textContent = players[1].lives;
+                document.getElementById('p1Health').style.width = `${(players[0].health / MAX_HEALTH) * 100}%`;
+                document.getElementById('p2Health').style.width = `${(players[1].health / MAX_HEALTH) * 100}%`;
+                updateKeyIndicators();
+            }
+            function updateKeyIndicators() {
+                if (!players.length) return;
+                const p1 = players[0];
+                const p2 = players[1];
+                document.getElementById('L-left').classList.toggle('on', !!keys[p1.controls.left]);
+                document.getElementById('L-up').classList.toggle('on', !!keys[p1.controls.thrust]);
+                document.getElementById('L-right').classList.toggle('on', !!keys[p1.controls.right]);
+                document.getElementById('L-down').classList.toggle('on', !!keys[p1.controls.down]); // Assuming 's' for down if it exists
+                document.getElementById('L-shoot').classList.toggle('on', !!keys[p1.controls.fire]);
+                document.getElementById('R-left').classList.toggle('on', !!keys[p2.controls.left]);
+                document.getElementById('R-up').classList.toggle('on', !!keys[p2.controls.thrust]);
+                document.getElementById('R-right').classList.toggle('on', !!keys[p2.controls.right]);
+                document.getElementById('R-shoot').classList.toggle('on', !!keys[p2.controls.fire]);
+            }
+            function endGame() {
+                gameState = "GAMEOVER";
+                const winner = players.find(p => p.lives > 0);
+                winMessageEl.textContent = `${winner.id === 1 ? 'Red' : 'Blue'} Wins!`;
+                winMessageEl.style.color = winner.color;
+                winModal.classList.add("show");
+            }
+            function checkCollisions() {
+                // Bullets vs Players
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    for (const p of players) { 
+                        const hasShield = p.effects.some(e => e.type === 'shield');
+                        if (p.id !== b.owner && p.lives > 0 && Math.hypot(b.x - p.x, b.y - p.y) < SHIP_SIZE) {
+                            if (hasShield) { bullets.splice(i, 1); spawnParticles(b.x, b.y, p.color, 10, 2); continue; }
+                            p.health--; 
+                            p.flash = 30; // Flash for 30 frames (0.5s)
+                            screenShake = Math.max(screenShake, 8);
+                            hitStop = 2;
+                            bullets.splice(i, 1);
+                            spawnParticles(p.x, p.y, p.color, 30, 4);
+                            if (p.health <= 0) {
+                                p.lives--;
+                                if (p.lives > 0) {
+                                    p.health = MAX_HEALTH; 
+                                    p.effects.push({
+                                        type: 'shield',
+                                        expires: Date.now() + 2000,
+                                        total: 2000
+                                    });
+                                } else {
+                                    const alivePlayers = players.filter(pl => pl.lives > 0);
+                                    if (alivePlayers.length <= 1) endGame();
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                }
+                // Players vs Asteroids
+                players.forEach(p => {
+                    if (p.lives <= 0) return;
+                    for (let i = asteroids.length - 1; i >= 0; i--) {
+                        const a = asteroids[i];
+                        if (Math.hypot(p.x - a.x, p.y - a.y) < a.size + SHIP_SIZE) {
+                            const hasShield = p.effects.some(e => e.type === 'shield');
+                            if (hasShield) {
+                                // Shield protects, but destroy asteroid
+                                spawnParticles(a.x, a.y, '#999', 20, 3);
+                                asteroids.splice(i, 1);
+                                screenShake = Math.max(screenShake, 5);
+                                continue;
+                            }
+                            // Damage player by 1 (like a bullet)
+                            p.health--;
+                            p.flash = 30;
+                            screenShake = Math.max(screenShake, 10);
+                            hitStop = 2;
+                            spawnParticles(p.x, p.y, p.color, 30, 4);
+                            // Destroy the meteor
+                            asteroids.splice(i, 1);
+                            if (p.health <= 0) {
+                                p.lives--;
+                                if (p.lives > 0) {
+                                    p.health = MAX_HEALTH;
+                                } else {
+                                    const alivePlayers = players.filter(pl => pl.lives > 0);
+                                    if (alivePlayers.length <= 1) endGame();
+                                }
+                            }
+                            // Give invincibility shield after collision
+                            p.effects.push({
+                                type: 'shield',
+                                expires: Date.now() + 2000,
+                                total: 2000
+                            });
+                        }
+                    }
+                });
+                // Bullets vs Asteroids
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    for (let j = asteroids.length - 1; j >= 0; j--) {
+                        const a = asteroids[j];
+                        if (Math.hypot(b.x - a.x, b.y - a.y) < a.size) {
+                            bullets.splice(i, 1);
+                            screenShake = Math.max(screenShake, a.size / 10);
+                            hitStop = 1;
+                            if (a.size > 20) {
+                                createAsteroid(a.x, a.y, a.size / 2);
+                                createAsteroid(a.x, a.y, a.size / 2);
+                            }
+                            asteroids.splice(j, 1);
+                            spawnParticles(a.x, a.y, '#999', 20, 3);
+                            break; // Bullet can only hit one asteroid
+                        }
+                    }
+                }
+            }
+            function gameLoop(timestamp) {
+                requestAnimationFrame(gameLoop);
+                if (!lastTime) lastTime = timestamp;
+                const elapsed = timestamp - lastTime;
+                lastTime = timestamp;
+                accumulator += elapsed;
+                while (accumulator >= FIXED_TIME_STEP) {
+                    update();
+                    accumulator -= FIXED_TIME_STEP;
+                }
+                draw();
+            }
+            // --- Event Listeners & Main ---
+            window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+            window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+            startButton.addEventListener("click", () => {
+                readSettings();
+                init();
+                menuModal.classList.remove("show");
+                initCountdown();
+                if (!window._loopStarted) {
+                    window._loopStarted = true;
+                    requestAnimationFrame(gameLoop);
+                }
+            });
+            function initSettingsPanel() {
+                const panel = document.getElementById("settingsPanel");
+                const openBtn = document.getElementById("btnSettings");
+                const closeBtn = document.getElementById("btnCloseSettings");
+                openBtn.addEventListener("click", () => {
+                    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                });
+                closeBtn.addEventListener("click", () => {
+                    panel.style.display = "none";
+                });
+            }
+            function initCountdown() {
+                gameState = "COUNTDOWN";
+                countdown = 3;
+                showGo = false;
+                window.countdownAlpha = 0;
+                const tick = () => {
+                    if (countdown > 1) {
+                        countdown--;
+                        window.countdownAlpha = 0;
+                        setTimeout(tick, 1000);
+                    } else {
+                        countdown = 0; showGo = true; goStartTime = Date.now(); window.countdownAlpha = 1;
+                        setTimeout(() => { showGo = false; window.countdownAlpha = 0; startGame(); }, 1000);
+                    }
+                };
+                window.countdownAlpha = 1;
+                setTimeout(tick, 1000);
+            }
+            retryButton.addEventListener("click", () => {
+                // Restart the game directly
+                winModal.classList.remove("show");
+                init();
+                initCountdown();
+            });
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        performanceMode = document.documentElement.classList.contains('performance-mode');
+                    }
+                });
+            });
+            observer.observe(document.documentElement, { attributes: true });
+            initSettingsPanel();
+        </script>
+    </body>
+</html>

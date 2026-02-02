@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Illumoid OS - Changelog</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        padding: 40px 20px;
+        background: transparent;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 28px 28px 24px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.16);
+        box-shadow:
+          0 10px 40px rgba(0,0,0,0.35),
+          inset 0 1px 0 rgba(255,255,255,0.05);
+        backdrop-filter: saturate(140%) blur(16px);
+        -webkit-backdrop-filter: saturate(140%) blur(16px);
+      }
+      h1 {
+        text-align: center;
+        margin: 0 0 20px 0;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        color: var(--primary-accent);
+      }
+      .changelog-entry {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+      }
+      .version-badge {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        background: color-mix(in oklab, var(--primary-accent-2) 75%, #0000);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 999px;
+        backdrop-filter: saturate(140%) blur(4px);
+      }
+      h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        opacity: 0.9;
+        margin: 16px 0 12px 0;
+        text-align: left !important;
+      }
+      ul {
+        list-style-type: none;
+        padding-left: 16px;
+        margin: 0;
+      }
+      li {
+        font-size: 14.5px;
+        line-height: 1.6;
+        color: #e5e5e5;
+        opacity: 0.92;
+        margin-bottom: 6px;
+        position: relative;
+      }
+      li::before {
+        content: '•';
+        position: absolute;
+        left: -16px;
+        color: var(--primary-accent);
+        font-weight: bold;
+      }
+      ul ul {
+        margin-top: 6px;
+        padding-left: 20px;
+      }
+      ul ul li::before {
+        content: '–';
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Changelog</h1>
+      <div class="changelog-entry">
+        <h1>v4.2<span class="version-badge">Latest</span></h1>
+        <h2>New Features</h2>
+        <ul>
+          <li>Added Feedback application to collect user feedback directly within Illumoid OS.</li>
+          <li>Implemented a new "Send Feedback" button in the taskbar for easy access.</li>
+        </ul>
+        <h2>Performance</h2>
+        <ul>
+          <li>Removed excessive Unnecessary blurs</li>
+          <li>Optimized CSS for faster load times</li>
+          <li>Fixed the massive Background Animation Performance dips (This one I'm really proud of)</li>
+        </ul>
+        <h2>Bug Fixes</h2>
+        <ul>
+          <li>Fixed the spam reload issue when opening Games/Media from the taskbar.</li>
+          <li>Removed border radius on a window when maximized.</li>
+        </ul>
+        <h1>v4.1<span class="version-badge" style="display: none;"></span></h1>
+        <h2>Major Features</h2>
+        <ul>
+          <li>Increased Customization with Secondary accents and Middle Gradients.</li>
+        </ul>
+        <h2>Performance Improvements</h2>
+        <ul>
+          <li>Optimized PixiJS engine for smoother performance on Geometry Dash</li>
+          <li>Reduced Excessive Blur Filter usage</li>
+        </ul>
+        <h2>Fixes</h2>
+        <ul>
+          <li>Resolved an issue with the taskbar not updating correctly</li>
+          <li>Fixed an issue with the taskbar icons not displaying correctly</li>
+        </ul>
+        <h1>v4</h1>
+        <h2>Major Features</h2>
+        <ul>
+          <li>Complete UI redesign with modern glassmorphism aesthetics</li>
+          <li>New plugin system allowing custom extensions</li>
+          <li>Dark/Light theme switching</li>
+          <li>Advanced search functionality across all applications</li>
+          <li>New notification center with priority levels</li>
+          <li>And alot more but I'm too lazy to type it all so</li>
+        </ul>
+      <div class="changelog-entry">
+        <h1>v2.6 <span class="version-badge" style="display: none;"></span></h1>
+        <h2>Features</h2>
+        <ul>
+          <li>Added 1 new game</li>
+          <li>Removed window resizing (Temporary)</li>
+        </ul>
+        <h2>Appearance</h2>
+        <ul>
+          <li>Increased icon size for better visibility on smaller screens</li>
+          <li>FPS mode toggle is now accent color</li>
+          <li>Changed Games and Media icons</li>
+        </ul>
+        <h2>Scripts</h2>
+        <ul>
+          <li>Fixed performance mode logic</li>
+          <li>Added new "--primary-accent-dark" style color</li>
+          <li>Loading screen reimplemented</li>
+        </ul>
+        <h2>Bug Fixes</h2>
+        <ul>
+          <li>Fixed an issue where maximizing a window would not focus it</li>
+          <li>Corrected behavior of the FPS mode toggle button</li>
+          <li>Resolved bugs with the loading screen implementation</li>
+        </ul>
+      </div>
+      <div class="changelog-entry">
+        <h1>v2.5</h1>
+        <h2>Features</h2>
+        <ul>
+          <li>Games and Media pages now open by redirecting the current window instead of creating a new one</li>
+          <li>Added 17 new games to the library</li>
+        </ul>
+        <h2>Appearance</h2>
+        <ul>
+          <li>Implemented MacOS-style window control buttons (close, maximize)</li>
+          <li>Tweaked taskbar CSS</li>
+          <li>Removed Unnecessary effects</li>
+          <li>New Logo Animation</li>
+        </ul>
+        <h2>Scripts</h2>
+        <ul>
+          <li>Popup logic change</li>
+          <li>Removed `color.js` to streamline styling</li>
+          <li>Added `qol.js` for quality-of-life improvements</li>
+          <li>Major efficiency boost and code reduction in `cloak.js`</li>
+        </ul>
+        <h2>Bug Fixes</h2>
+        <ul>
+          <li>Prevented accidental image dragging on application icons</li>
+          <li>Fixed issues with diagonal window resizing</li>
+          <li>Fixed Fullscreen</li>
+        </ul>
+      </div>
+      <div class="changelog-entry">
+        <h1>v2.4</h1>
+        <h2>Performance Optimizations</h2>
+        <ul>
+          <li>Significantly reduced lines of code in `cloak.js`</li>
+          <li>Added an FPS Mode toggle to individual windows</li>
+          <li>Further centralized CSS for better management</li>
+        </ul>
+        <h2>Features</h2>
+        <ul>
+          <li>New sidebar displaying Date, Time, and Battery status</li>
+          <li>Added a search bar to Games and Media pages</li>
+          <li>Added Games: Speed Stars, Baseball Bros</li>
+        </ul>
+        <h2>Bug Fixes</h2>
+        <ul>
+          <li>Fixed a padding bug affecting buttons</li>
+          <li>Launcher not working sometimes fix</li>
+          <li>Bookmark Button fix</li>
+        </ul>
+      </div>
+      <div class="changelog-entry">
+        <h1>v2.3</h1>
+        <h2>Performance Optimizations</h2>
+        <ul>
+          <li>Added Performance Mode</li>
+          <li>Reduced some effects</li>
+          <li>Shorter Scripts & Centralized CSS</li>
+        </ul>
+        <h2>General Improvements</h2>
+        <ul>
+          <li>Resizable Windows</li>
+          <li>Anti-Close & Touch Support</li>
+          <li>Loading animations</li>
+          <li>Pong Keybinds rework</li>
+        </ul>
+        <h2>Appearance</h2>
+        <ul>
+          <li>New loading screen and improved startup animations</li>
+          <li>Taskbar buttons now "pop" on hover</li>
+          <li>Replaced image-based buttons with text buttons on Games/Media pages</li>
+          <li>Window titlebars now match the window background color</li>
+        </ul>
+        <h2>Bug Fixes</h2>
+        <ul>
+          <li>Re-addressed the window dragging freeze fix</li>
+          <li>Chat Fix & Taskbar diagonal startup fix</li>
+          <li>Light Mode media gradient fix</li>
+          <li>Game/Media Button renaming entire window fix</li>
+          <li>White Box on Modernization toggle & Pong AI fix</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

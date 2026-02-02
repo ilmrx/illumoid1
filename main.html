@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="/image/logo.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Illumoid OS is a website operating system built entirely on Frontend languages.">
+    <title>Illumoid OS</title>
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/main-body.css">
+    <link rel="stylesheet" href="/styles/test.css">
+    <link rel="preload" href="/image/logo.ico" as="image">
+    <link rel="preload" href="/image/favicon.ico" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Icons&display=swap" as="style">
+    <link rel="preload" href="/scripts/cloak.js" as="script">
+    <link rel="preload" href="/scripts/qol.js" as="script">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="/scripts/cloak.js"></script>
+    <script src="/scripts/qol.js"></script>
+</head>
+<body>
+<svg width="10vw" class="svgLogo" onmousedown="return false;" style="user-select:none" viewBox="0 0 200 200"><path fill="currentColor" fill-rule="evenodd" d="M82 27c-40 11-63 52-51 92q10 27 33 40c11 7 19 9 33 10q19 1 33-6 28-13 39-44c3-9 4-25 2-35-6-27-25-46-51-56-12-3-27-4-38-1m9 13c-40 7-61 52-40 87 7 12 27 26 40 26l18-41 13 4s-18 35-16 37c2 1 13-1 21-5 19-10 30-30 30-51 0-28-19-54-47-57zm34 38-12 12 12 12 12-12z"/></svg>
+    <div class="taskbar">
+        <button class="taskbarButton" onclick="openStartMenu()" title="Start Menu">
+            <img src="/image/taskbar/startmenu.png" class="taskbarButtonIcon" alt="Start Menu">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.games()" title="Games">
+            <img src="/image/taskbar/games.png" class="taskbarButtonIcon" alt="Games">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.media()" title="Media">
+            <img src="/image/taskbar/media.png" class="taskbarButtonIcon" alt="Media">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.proxy()" title="Proxy">
+            <img src="/image/taskbar/search.png" class="taskbarButtonIcon" alt="Proxy">
+        </button>
+        <button class="taskbarButton" onclick="windowify('/pages/chat.html', null, 'Chat')" title="Chat">
+            <img src="/image/taskbar/chat.png" class="taskbarButtonIcon" alt="Chat">
+        </button>
+        <button class="taskbarButton" onclick="windowify('/pages/feedback.html', null, 'Feedback')" title="Feedback">
+            <img src="/image/taskbar/feedback.png" class="taskbarButtonIcon" alt="Feedback">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.settings()" title="Settings">
+            <img src="/image/taskbar/settings.png" class="taskbarButtonIcon" alt="Settings">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.launcher()" title="Launcher">
+            <img src="/image/taskbar/launcher.png" class="taskbarButtonIcon" alt="Launcher">
+        </button>
+        <button class="taskbarButton" onclick="illumoid.openPlugins()" title="Plugins">
+            <img src="/image/taskbar/plugins.png" class="taskbarButtonIcon" alt="Plugins">
+        </button>
+        <button class="taskbarButton" onclick="windowify('/pages/about.html', null, 'Changelog')" title="About">
+            <img src="/image/taskbar/info.png" class="taskbarButtonIcon" alt="About">
+        </button>
+    </div>
+</body>
+</html>
