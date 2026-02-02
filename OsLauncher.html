@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home</title>
+<link rel="icon" href="https://ilmrx.github.io/illumoid/favicon.ico">
+</head>
+<body>
+<iframe id="launcherFrame" style="width: 1px; height: 1px;"></iframe>
+<script>
+  (function() {
+    // Cache for the launcher URL to avoid repeated fetches
+    const CACHE_KEY = 'illumoid_prefix';
+    const CACHE_DURATION = 3600000; // 1 hour
+    let cachedPrefix = localStorage.getItem(CACHE_KEY);
+    let cacheTime = localStorage.getItem(CACHE_KEY + '_time');
+    // Fast launcher loading with caching
+    function loadLauncher() {
+      const iframe = document.getElementById('launcherFrame');
+      // Check if cache is valid
+      if (cachedPrefix && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION)) {
+        iframe.src = cachedPrefix.trim() + '/MainLauncher.html';
+        return;
+      }
+      // Fetch with timeout for faster failure handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      fetch('https://ilmrx.github.io/illumoid/newest.txt', {
+        signal: controller.signal,
+        cache: 'force-cache'
+      })
+      .then(response => {
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.text();
+      })
+      .then(prefix => {
+        const trimmedPrefix = prefix.trim();
+        iframe.src = trimmedPrefix + '/MainLauncher.html';
+        // Cache the result
+        localStorage.setItem(CACHE_KEY, trimmedPrefix);
+        localStorage.setItem(CACHE_KEY + '_time', Date.now().toString());
+      })
+      .catch(error => {
+        clearTimeout(timeoutId);
+        console.error('Error loading launcher URL:', error);
+        // Fallback to cached version if available
+        if (cachedPrefix) {
+          iframe.src = cachedPrefix.trim() + '/MainLauncher.html';
+        }
+      });
+    }
+    // Start loading immediately without waiting for DOMContentLoaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadLauncher);
+    } else {
+      loadLauncher();
+    }
+  })();
+</script>
+</body>
+</html>
